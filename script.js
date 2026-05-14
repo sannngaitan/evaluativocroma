@@ -509,7 +509,6 @@ function renderTaskList() {
   listEl.innerHTML = '';
 
   dayTasks.forEach((t, i) => {
-    // t.cats is an array of { id, name, color } snapshotted at creation — survives category deletion
     const taskCats  = Array.isArray(t.cats) ? t.cats : [];
     const isOverdue = t.time && t.time < nowStr && isToday && !t.done;
     const tagsHtml  = taskCats.map(c =>
@@ -520,21 +519,22 @@ function renderTaskList() {
     item.className = 'tarea';
     item.innerHTML =
       `<div class="check ${t.done ? 'hecho' : ''}" role="checkbox" aria-checked="${t.done}" tabindex="0"></div>` +
-      `<div class="task-info">` +
-        `<div class="task-text ${t.done ? 'hecho' : ''}">${escHtml(t.text)}</div>` +
-        `<div class="task-meta">` +
-          (t.time ? `<span class="task-time${isOverdue ? ' vencida' : ''}">${t.time}${isOverdue ? ' · vencida' : ''}</span>` : '') +
+      `<div class="tarea-info">` + // Corregido: Clase coincidente con CSS
+        `<div class="tarea-texto ${t.done ? 'hecho' : ''}">${escHtml(t.text)}</div>` + // Corregido: Clase coincidente
+        `<div class="tarea-meta">` +
+          (t.time ? `<span class="tarea-hora ${isOverdue ? 'vencida' : ''}">${t.time}${isOverdue ? ' · vencida' : ''}</span>` : '') +
           tagsHtml +
         `</div>` +
       `</div>` +
-      `<button class="del-btn" aria-label="Eliminar tarea">` +
-        `<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>` +
+      `<button class="btn-borrar" aria-label="Eliminar tarea">` + // Corregido: Clase para el event listener
+        `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>` +
       `</button>`;
 
     item.querySelector('.check').addEventListener('click', () => toggleTask(i));
     item.querySelector('.check').addEventListener('keydown', e => {
       if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleTask(i); }
     });
+    // Corregido: Ahora el selector coincide con la clase del botón creado arriba
     item.querySelector('.btn-borrar').addEventListener('click', () => deleteTask(i));
 
     listEl.appendChild(item);
