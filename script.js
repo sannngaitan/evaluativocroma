@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════
-   TAREAS — app.js
+   TAREAS — script.js
    ════════════════════════════════════════ */
 
 'use strict';
@@ -12,7 +12,6 @@ const MONTHS_ES  = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Ag
 const TASKS_KEY  = 'tareas_v2';
 const CATS_KEY   = 'tareas_cats_v2';
 const NOTIF_KEY  = 'tareas_notif_v2';
-const THEME_KEY  = 'tareas_theme';
 
 const DEFAULT_CATS = [
   { id: 'work',     name: 'trabajo',  color: '#185FA5' },
@@ -154,7 +153,7 @@ function showToast(title, body) {
   const container = document.getElementById('toast-container');
   const el = document.createElement('div');
   el.className = 'toast';
-  el.innerHTML = `<div class="toast-title">${escHtml(title)}</div><div class="toast-body">${escHtml(body)}</div>`;
+  el.innerHTML = `<strong>${escHtml(title)}</strong><span>${escHtml(body)}</span>`;
   container.appendChild(el);
   setTimeout(() => {
     el.style.opacity = '0';
@@ -199,39 +198,38 @@ function getCatById(id) {
 let selectedCatIds = new Set();
 
 function renderCatPicker() {
-  const cats   = loadCats();
-  const list   = document.getElementById('cat-picker-list');
-  const btn    = document.getElementById('cat-picker-btn');
-  const label  = document.getElementById('cat-picker-label');
+  const cats = loadCats();
+  const list = document.getElementById('cat-picker-list');
+  const btn  = document.getElementById('cat-picker-btn');
 
-  // Keep only IDs that still exist
+  // Limpiar ids que ya no existen
   selectedCatIds = new Set([...selectedCatIds].filter(id => cats.find(c => c.id === id)));
 
   if (!cats.length) {
-    list.innerHTML = '<div class="cat-picker-empty">Sin categorías creadas</div>';
+    list.innerHTML = '<div class="sin-cats">Sin categorías creadas</div>';
   } else {
     list.innerHTML = cats.map(c => {
       const checked = selectedCatIds.has(c.id);
-      return `<div class="cat-picker-item" data-id="${c.id}">
-        <span class="cat-picker-check${checked ? ' checked' : ''}" style="${checked ? 'background:'+ c.color :''}"></span>
-        <span class="cat-picker-dot" style="background:${c.color}"></span>
-        <span class="cat-picker-name">${escHtml(c.name)}</span>
+      return `<div class="opcion-cat" data-id="${c.id}">
+        <span class="check-cat${checked ? ' marcado' : ''}" style="${checked ? 'background:' + c.color : ''}"></span>
+        <span class="punto-cat" style="background:${c.color}"></span>
+        <span class="nombre-cat">${escHtml(c.name)}</span>
       </div>`;
     }).join('');
 
-    list.querySelectorAll('.cat-picker-item').forEach(item => {
+    list.querySelectorAll('.opcion-cat').forEach(item => {
       item.addEventListener('click', () => toggleCatPick(item.dataset.id));
     });
   }
 
-  // Update button label
+  // Actualizar texto del botón
   const selected = cats.filter(c => selectedCatIds.has(c.id));
   if (selected.length === 0) {
-    label.textContent = 'Categorías';
-    btn.classList.remove('has-selection');
+    btn.textContent = 'Categorías';
+    btn.classList.remove('con-seleccion');
   } else {
-    label.textContent = selected.map(c => c.name).join(', ');
-    btn.classList.add('has-selection');
+    btn.textContent = selected.map(c => c.name).join(', ');
+    btn.classList.add('con-seleccion');
   }
 }
 
@@ -269,13 +267,13 @@ function renderCatsList() {
   }
 
   el.innerHTML = cats.map(c => `
-    <div class="cat-chip">
-      <span class="cat-chip-dot" style="background:${c.color}"></span>
-      <span class="cat-chip-name">${escHtml(c.name)}</span>
-      <button class="cat-chip-del" data-id="${c.id}" aria-label="Eliminar ${escHtml(c.name)}">×</button>
+    <div class="chip">
+      <span class="chip-punto" style="background:${c.color}"></span>
+      <span>${escHtml(c.name)}</span>
+      <button class="chip-borrar" data-id="${c.id}" aria-label="Eliminar ${escHtml(c.name)}">×</button>
     </div>`).join('');
 
-  el.querySelectorAll('.cat-chip-del').forEach(btn => {
+  el.querySelectorAll('.chip-borrar').forEach(btn => {
     btn.addEventListener('click', () => deleteCat(btn.dataset.id));
   });
 }
@@ -362,7 +360,7 @@ function renderCalGrid() {
     const isActive = key === selectedKey;
     const hasTasks = (tasks[key] || []).length > 0;
 
-    const classes = ['cal-day', isPast ? 'past' : '', isToday ? 'today' : '', isActive ? 'active' : '']
+    const classes = ['dia', isPast ? 'past' : '', isToday ? 'today' : '', isActive ? 'active' : '']
       .filter(Boolean).join(' ');
     const dot = hasTasks ? '<span class="cal-dot"></span>' : '';
 
@@ -371,7 +369,7 @@ function renderCalGrid() {
 
   grid.innerHTML = html;
 
-  grid.querySelectorAll('.cal-day:not(.empty):not(.past)').forEach(cell => {
+  grid.querySelectorAll('.dia:not(.empty):not(.past)').forEach(cell => {
     cell.addEventListener('click', () => {
       selectedKey = cell.dataset.key;
       render();
@@ -487,10 +485,10 @@ function renderTaskList() {
   const countEl = document.getElementById('day-count');
   if (!total) {
     countEl.textContent = '';
-    countEl.className   = 'day-count';
+    countEl.className = 'day-count';
   } else {
     countEl.textContent = done + '/' + total + ' completadas';
-    countEl.className   = 'day-count' + (done === total ? ' all-done' : '');
+    countEl.className = 'day-count' + (done === total ? ' all-done' : '');
   }
 
   // Task list
@@ -498,7 +496,7 @@ function renderTaskList() {
 
   if (!dayTasks.length) {
     listEl.innerHTML = `
-      <div class="empty-state">
+      <div class="vacio-msg">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
         </svg>
@@ -519,13 +517,13 @@ function renderTaskList() {
     ).join('');
 
     const item = document.createElement('div');
-    item.className = 'task-item';
+    item.className = 'tarea';
     item.innerHTML =
-      `<div class="check ${t.done ? 'done' : ''}" role="checkbox" aria-checked="${t.done}" tabindex="0"></div>` +
+      `<div class="check ${t.done ? 'hecho' : ''}" role="checkbox" aria-checked="${t.done}" tabindex="0"></div>` +
       `<div class="task-info">` +
-        `<div class="task-text ${t.done ? 'done' : ''}">${escHtml(t.text)}</div>` +
+        `<div class="task-text ${t.done ? 'hecho' : ''}">${escHtml(t.text)}</div>` +
         `<div class="task-meta">` +
-          (t.time ? `<span class="task-time${isOverdue ? ' overdue' : ''}">${t.time}${isOverdue ? ' · vencida' : ''}</span>` : '') +
+          (t.time ? `<span class="task-time${isOverdue ? ' vencida' : ''}">${t.time}${isOverdue ? ' · vencida' : ''}</span>` : '') +
           tagsHtml +
         `</div>` +
       `</div>` +
@@ -537,7 +535,7 @@ function renderTaskList() {
     item.querySelector('.check').addEventListener('keydown', e => {
       if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleTask(i); }
     });
-    item.querySelector('.del-btn').addEventListener('click', () => deleteTask(i));
+    item.querySelector('.btn-borrar').addEventListener('click', () => deleteTask(i));
 
     listEl.appendChild(item);
   });
@@ -562,21 +560,17 @@ function renderStats() {
 /* ══════════════════════════════
    EVENT LISTENERS
 ══════════════════════════════ */
-document.getElementById('theme-btn').addEventListener('click', toggleTheme);
-
 document.getElementById('cat-picker-btn').addEventListener('click', openCatPicker);
 document.addEventListener('click', closeCatPickerOutside);
 
 document.getElementById('notif-allow-btn').addEventListener('click', requestNotifPermission);
 
 document.getElementById('cats-toggle').addEventListener('click', () => {
-  const body    = document.getElementById('cats-body');
-  const icon    = document.getElementById('cats-icon');
-  const btn     = document.getElementById('cats-toggle');
-  const isOpen  = !body.hidden;
-  body.hidden   = isOpen;
-  icon.classList.toggle('open', !isOpen);
-  btn.setAttribute('aria-expanded', String(!isOpen));
+  const body   = document.getElementById('cats-body');
+  const btn    = document.getElementById('cats-toggle');
+  const isOpen = !body.hidden;
+  body.hidden  = isOpen;
+  btn.textContent = isOpen ? 'Categorías ▾' : 'Categorías ▴';
 });
 
 document.getElementById('add-cat-btn').addEventListener('click', addCat);
@@ -600,7 +594,6 @@ document.getElementById('goto-today').addEventListener('click', () => {
 /* ══════════════════════════════
    BOOT
 ══════════════════════════════ */
-initTheme();
 initView();
 buildDateSelects();
 buildDowLabels();
